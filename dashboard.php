@@ -1,56 +1,32 @@
-
 <?php
-session_start();
 include("../config/db.php");
 include("../includes/header.php");
 include("../includes/navbar.php");
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
+/* User security */
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'student') {
     header("Location: ../login.php");
     exit;
 }
 
-/* Total Registrations */
-$reg_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM registrations");
-$reg_data = mysqli_fetch_assoc($reg_query);
-$regs = $reg_data['total'];
+$uid = $_SESSION['user_id'];
 
-/* Total Students */
-$student_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM users WHERE role='student'");
-$student_data = mysqli_fetch_assoc($student_query);
-$students = $student_data['total'];
-
-/* Total Events */
-$event_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM events");
-$event_data = mysqli_fetch_assoc($event_query);
-$events = $event_data['total'];
+/* My registrations count */
+$count = mysqli_fetch_assoc(mysqli_query($conn,
+    "SELECT COUNT(*) AS total 
+     FROM registrations 
+     JOIN students ON registrations.student_id = students.id
+     WHERE students.user_id = $uid"
+))['total'];
 ?>
 
-<div class="admin-box">
+<div class="user-box">
+    <h2>Student Dashboard</h2>
 
-<h2>Admin Dashboard</h2>
-
-<div class="card-grid">
-
-<a href="view_registrations.php" style="text-decoration:none;">
-<div class="dashboard-card">
-<h3>Total Registrations</h3>
-<p><?php echo $regs; ?></p>
-</div>
-</a>
-
-<div class="dashboard-card">
-<h3>Total Students</h3>
-<p><?php echo $students; ?></p>
-</div>
-
-<div class="dashboard-card">
-<h3>Total Events</h3>
-<p><?php echo $events; ?></p>
-</div>
-
-</div>
-
+    <div class="user-card">
+        <h3><?php echo $count; ?></h3>
+        <p>My Registered Events</p>
+    </div>
 </div>
 
 <?php include("../includes/footer.php"); ?>
